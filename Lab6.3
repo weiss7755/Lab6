@@ -1,0 +1,112 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class KindofAntelopes : IComparable<KindofAntelopes>
+{
+    public string Name { get; set; }
+    public char Group { get; set; }
+    public string Area { get; set; }
+    public int Population
+    {
+        get => _pop;
+        set => _pop = value < 0
+            ? throw new ArgumentException("Population must be ≥ 0")
+            : value;
+    }
+    private int _pop;
+
+    public KindofAntelopes()
+        : this("Невідома", '-', "Невідоме", 0) { }
+
+    public KindofAntelopes(string name, char group, string area, int population)
+    {
+        Name = name;
+        Group = group;
+        Area = area;
+        Population = population;
+    }
+
+    public int CompareTo(KindofAntelopes other)
+    {
+        if (other == null) return 1;
+        return Population.CompareTo(other.Population);
+    }
+
+    public override string ToString()
+        => $"{Name}({Group}) in {Area}: {Population}";
+}
+
+class Program
+{
+    static void Main()
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        // Підготовка даних
+        var antelopes = new List<KindofAntelopes>
+        {
+            new KindofAntelopes("Гну", 'A', "Африка", 560000),
+            new KindofAntelopes("Джейран", 'A', "Азія", 30000),
+            new KindofAntelopes("Бейза", 'B', "Африка", 2500),
+            new KindofAntelopes("Сайга", 'A', "Азія", 85000),
+            new KindofAntelopes("Імпала", 'C', "Африка", 100000),
+            new KindofAntelopes("Північний олень", 'D', "Америка", 400000),
+            new KindofAntelopes("Кулан", 'E', "Азія", 15000),
+            new KindofAntelopes("Антилопа каама", 'F', "Африка", 12000),
+            new KindofAntelopes("Газель Томпсона", 'G', "Африка", 550000)
+        };
+
+        // 1) Африканські антилопи з популяцією > 10000, відсортувати за спаданням, вибрати назви
+        var africanBig = antelopes
+            .Where(a => a.Area == "Африка" && a.Population > 10000)
+            .OrderByDescending(a => a.Population)
+            .Select(a => a.Name);
+
+        Console.WriteLine("1) Африканські антилопи з популяцією > 10000 (спадання):");
+        foreach (var name in africanBig)
+            Console.WriteLine($"   {name}");
+
+        // 2) Перша антилопа групи 'A' в Азії з Population < 100000
+        var firstMatch = antelopes
+            .Where(a => a.Group == 'A' && a.Area == "Азія" && a.Population < 100000)
+            .OrderBy(a => a.Population)
+            .FirstOrDefault();
+
+        Console.WriteLine("\n2) Перша азійська антилопа групи A з Population < 100000:");
+        Console.WriteLine(firstMatch != null
+            ? $"   {firstMatch}"
+            : "   Не знайдено");
+
+        // 3) Групування по регіону, сортування груп за кількістю, вивід елементів кожної групи
+        var groupedByArea = antelopes
+            .GroupBy(a => a.Area)
+            .OrderByDescending(g => g.Count());
+
+        Console.WriteLine("\n3) Групування по регіону (за кількістю у спадному порядку):");
+        foreach (var group in groupedByArea)
+        {
+            Console.WriteLine($"   {group.Key} ({group.Count()} видів):");
+            foreach (var a in group.OrderBy(a => a.Name))
+                Console.WriteLine($"     - {a.Name}");
+        }
+
+        // 4) Три антилопи з найменшою Population, де група ≠ 'A', відсортувати по зростанню
+        var lowestPop = antelopes
+            .Where(a => a.Group != 'A')
+            .OrderBy(a => a.Population)
+            .Take(3)
+            .Select(a => new { a.Name, a.Population });
+
+        Console.WriteLine("\n4) 3 антилопи з найменшою чисельністю (група ≠ 'A'):");
+        foreach (var item in lowestPop)
+            Console.WriteLine($"   {item.Name}: {item.Population}");
+
+        // 5) Чи є хоча б одна антилопа в Африці з Population < 10000 і групою 'F' або 'G'?
+        bool hasRare = antelopes
+            .Where(a => a.Area == "Африка")
+            .Any(a => a.Population < 10000 && (a.Group == 'F' || a.Group == 'G'));
+
+        Console.WriteLine("\n5) Чи є рідкісна африканська антилопа (група F або G, <10000)?");
+        Console.WriteLine(hasRare ? "   Так, є." : "   Ні, немає.");
+    }
+}
