@@ -1,0 +1,99 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+public class CollectionType<T> : IEnumerable<T>
+{
+    private List<T> _items;
+
+    // Конструктор за замовчуванням
+    public CollectionType()
+    {
+        _items = new List<T>();
+    }
+
+    // Конструктор із початковою колекцією
+    public CollectionType(IEnumerable<T> collection)
+    {
+        _items = new List<T>(collection);
+    }
+
+    // Додавання елемента
+    public void Add(T item)
+    {
+        _items.Add(item);
+    }
+
+    // Видалення елемента
+    public bool Remove(T item)
+    {
+        return _items.Remove(item);
+    }
+
+    // Отримання кількості елементів
+    public int Count => _items.Count;
+
+    // Індексатор
+    public T this[int index]
+    {
+        get => _items[index];
+        set => _items[index] = value;
+    }
+
+    // Перевірка наявності елемента
+    public bool Contains(T item)
+    {
+        return _items.Contains(item);
+    }
+
+    // Очистити колекцію
+    public void Clear()
+    {
+        _items.Clear();
+    }
+
+    // Перевантаження оператора + для об'єднання колекцій
+    public static CollectionType<T> operator +(CollectionType<T> a, CollectionType<T> b)
+    {
+        var result = new CollectionType<T>(a._items);
+        result._items.AddRange(b._items);
+        return result;
+    }
+
+    // Реалізація IEnumerable<T>
+    public IEnumerator<T> GetEnumerator()
+    {
+        return _items.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    // Переоприділення ToString для виводу елементів
+    public override string ToString()
+    {
+        return $"[{string.Join(", ", _items)}]";
+    }
+}
+class Program
+{
+    static void Main()
+    {
+        var collection1 = new CollectionType<int>();
+        collection1.Add(1);
+        collection1.Add(2);
+
+        var collection2 = new CollectionType<int>(new[] { 3, 4, 5 });
+
+        var combined = collection1 + collection2;
+
+        Console.WriteLine(combined); 
+
+        combined.Remove(2);
+        Console.WriteLine(combined[1]); 
+
+        Console.WriteLine($"Count: {combined.Count}"); 
+    }
+}
