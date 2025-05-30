@@ -1,0 +1,112 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class MyLinkedList<T>
+{
+    private LinkedList<T> list = new LinkedList<T>();
+
+    // Додавання елемента
+    public void Add(T item) => list.AddLast(item);
+
+    // Видалення елемента
+    public bool Remove(T item) => list.Remove(item);
+
+    // Виведення елементів
+    public void PrintAll()
+    {
+        foreach (var item in list)
+            Console.WriteLine("  " + item);
+    }
+
+    // Пошук елементів, що містять певне значення (для string)
+    public IEnumerable<T> FindContaining(string value)
+    {
+        if (typeof(T) != typeof(string))
+            throw new InvalidOperationException("Пошук за підстрокою доступний лише для рядків.");
+
+        return list.Cast<string>()
+                   .Where(s => s.Contains(value, StringComparison.CurrentCultureIgnoreCase))
+                   .Cast<T>();
+    }
+
+    // Підрахунок кількості рядків певної довжини
+    public int CountByLength(int length)
+    {
+        if (typeof(T) != typeof(string))
+            throw new InvalidOperationException("Фільтрація за довжиною доступна лише для рядків.");
+
+        return list.Cast<string>().Count(s => s.Length == length);
+    }
+
+    // Сортування за зростанням
+    public IEnumerable<T> SortAscending()
+        => list.OrderBy(x => x);
+
+    // Сортування за спаданням
+    public IEnumerable<T> SortDescending()
+        => list.OrderByDescending(x => x);
+}
+class Program
+{
+    static void Main()
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        var myList = new MyLinkedList<string>();
+
+        // Введення рядків
+        Console.Write("Скільки рядків ввести? ");
+        if (!int.TryParse(Console.ReadLine(), out int n) || n <= 0)
+        {
+            Console.WriteLine("Некоректне число.");
+            return;
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            Console.Write($"  Рядок {i + 1}: ");
+            string input = Console.ReadLine() ?? "";
+            myList.Add(input);
+        }
+
+        // Виведення
+        Console.WriteLine("\nВсі рядки:");
+        myList.PrintAll();
+
+        // Пошук підрядка
+        // Пошук підрядка
+        Console.Write("\nПошук підрядка: ");
+        string search = Console.ReadLine() ?? "";
+        var found = myList.FindContaining(search).ToList(); // Матеріалізуємо результат
+
+        if (found.Count == 0)
+        {
+            Console.WriteLine($"Рядки, що містять \"{search}\", не знайдено.");
+        }
+        else
+        {
+            Console.WriteLine($"Знайдено рядки, що містять \"{search}\":");
+            foreach (var s in found)
+                Console.WriteLine("  " + s);
+        }
+
+
+        // Підрахунок за довжиною
+        Console.Write("\nВведіть довжину рядка: ");
+        if (int.TryParse(Console.ReadLine(), out int len))
+        {
+            int count = myList.CountByLength(len);
+            Console.WriteLine($"Кількість рядків довжини {len}: {count}");
+        }
+
+        // Сортування за зростанням
+        Console.WriteLine("\nСортування за зростанням:");
+        foreach (var s in myList.SortAscending())
+            Console.WriteLine("  " + s);
+
+        // Сортування за спаданням
+        Console.WriteLine("\nСортування за спаданням:");
+        foreach (var s in myList.SortDescending())
+            Console.WriteLine("  " + s);
+    }
+}
