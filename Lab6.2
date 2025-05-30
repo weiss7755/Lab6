@@ -1,0 +1,136 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+
+public class CollectionType<T> : IEnumerable<T>
+{
+    private List<T> _items;
+
+    public CollectionType() => _items = new List<T>();
+    public CollectionType(IEnumerable<T> collection) => _items = new List<T>(collection);
+
+    public void Add(T item) => _items.Add(item);
+    public bool Remove(T item) => _items.Remove(item);
+    public void Clear() => _items.Clear();
+    public bool Contains(T item) => _items.Contains(item);
+
+    public int Count => _items.Count;
+    public T this[int i]
+    {
+        get => _items[i];
+        set => _items[i] = value;
+    }
+
+    // Метод сортування: для T, що реалізує IComparable<T>
+    public void SortItems()
+    {
+        _items.Sort();  
+    }
+
+    public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public override string ToString() => $"[{string.Join(", ", _items)}]";
+}
+
+// Клас з лабораторної #1, доповнений IComparable<T>
+public class KindofAntelopes : IComparable<KindofAntelopes>
+{
+    public string Name { get; set; }
+    public char Group { get; set; }
+    public string Area { get; set; }
+    public int Population
+    {
+        get => _pop;
+        set => _pop = value < 0 ? throw new ArgumentException("Population must be ≥ 0") : value;
+    }
+    private int _pop;
+
+    public KindofAntelopes()
+        : this("Невідома", '-', "Невідоме", 0) { }
+
+    public KindofAntelopes(string name, char group, string area, int population)
+    {
+        Name = name; Group = group; Area = area; Population = population;
+    }
+
+    // Копіювальний конструктор
+    public KindofAntelopes(KindofAntelopes other)
+        : this(other.Name, other.Group, other.Area, other.Population) { }
+
+    public void Display()
+    {
+        Console.WriteLine($"Назва: {Name}, Група: {Group}, Житло: {Area}, Чисельність: {Population}");
+    }
+
+    // Порівняння за Population
+    public int CompareTo(KindofAntelopes other)
+    {
+        if (other == null) return 1;
+        return this.Population.CompareTo(other.Population);
+    }
+
+    public override string ToString() => $"{Name}({Group})[{Population}]";
+}
+
+class Program
+{
+    static void Main()
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        var herd1 = new CollectionType<KindofAntelopes>(new[]
+        {
+            new KindofAntelopes("Джейран", 'А', "Азія", 30000),
+            new KindofAntelopes("Гну",    'В', "Африка", 560000),
+            new KindofAntelopes("Бейза",  'Н', "Африка", 2500)
+        });
+
+        var herd2 = new CollectionType<KindofAntelopes>(new[]
+        {
+            new KindofAntelopes("Ардиковий", 'С', "Європа", 12000),
+            new KindofAntelopes("Імпалa",    'D', "Африка", 100000)
+        });
+
+        var herd3 = new CollectionType<KindofAntelopes>(new[]
+        {
+            new KindofAntelopes("Сайга", 'Е', "Азія", 85000),
+            new KindofAntelopes("Морський козел", 'F', "Європа", 5000),
+            new KindofAntelopes("Північний олень", 'G', "Північна Америка", 400000),
+            new KindofAntelopes("Кулан", 'H', "Азія", 15000)
+        });
+
+        // Масив колекцій
+        var collections = new[] { herd1, herd2, herd3 };
+
+        // 2) Сортуємо елементи усередині кожної колекції за Population
+        foreach (var col in collections)
+        {
+            col.SortItems();
+        }
+
+        // Вивід після сортування
+        Console.WriteLine("=== Після сортування елементів у кожній колекції за Population ===");
+        for (int i = 0; i < collections.Length; i++)
+        {
+            Console.WriteLine($"Колекція #{i + 1} (Count = {collections[i].Count}): {collections[i]}");
+        }
+
+        // 3) LINQ-запити
+        int n = 3;
+        // знайти колекції розміру n
+        var sizeN = collections.Where(c => c.Count == n).ToList();
+        Console.WriteLine($"\nКолекції з кількістю елементів = {n}:");
+        if (sizeN.Any())
+            sizeN.ForEach(c => Console.WriteLine(c));
+        else
+            Console.WriteLine("Таких немає.");
+
+        // знайти максимальну та мінімальну колекцію за Count
+        var maxCol = collections.OrderByDescending(c => c.Count).First();
+        var minCol = collections.OrderBy(c => c.Count).First();
+        Console.WriteLine($"\nМаксимальна колекція (Count = {maxCol.Count}): {maxCol}");
+        Console.WriteLine($"Мінімальна колекція (Count = {minCol.Count}): {minCol}");
+    }
+}
